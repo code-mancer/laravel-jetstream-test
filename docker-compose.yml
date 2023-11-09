@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+    laravel-jetstream-app:
+        container_name: laravel-jetstream-app
+        hostname: laravel-jetstream-app
+        build:
+            context: ./
+        volumes:
+            - .:/var/www/html
+        image: laravel-jetstream-app-image
+        ports:
+            - "9001:9000"
+        depends_on:
+            - postgres
+        networks:
+            - laravel-jetstream-network
+
+    nginx:
+        image: nginx:1.23.1-alpine
+        container_name: laravel-jetstream-nginx
+        restart: unless-stopped
+        tty: true
+        ports:
+            - "8080:80"
+        volumes:
+        - ./:/var/www/html
+        - ./nginx/:/etc/nginx/conf.d/
+        depends_on:
+            - laravel-jetstream-app
+        networks:
+            - laravel-jetstream-network
+
+    postgres:
+        image: postgres:13
+        container_name: laravel-jetstream-postgres
+        environment:
+            POSTGRES_DB: laravel_jetstream
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: root
+        ports:
+            - "5434:5432"
+        networks:
+            - laravel-jetstream-network
+        hostname: laravel-jetstream-postgres-host
+
+networks:
+    laravel-jetstream-network:
